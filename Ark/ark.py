@@ -11,7 +11,7 @@ global first_run
 first_run = True
 
 
-bed_spawn = 0
+bed_count = 0
 look_up_delay = 0.5 
 look_down_delay = 0.3
 delay_90 = 2.97 
@@ -58,7 +58,7 @@ def bed_spawn(bed_name):
 
     
     # The bed names for the farm need to set the Bedname in the bot 
-    bed_name = bed_name + str(bed_spawn) # cycling threw the farm 
+    bed_name = bed_name + str(bed_count) # cycling threw the farm 
     count = 0
     bed_screen()
     while (bed_screen() == False): # This is checking to see if the bed has appeared on the map if not the program will retry getting to the bedscreen 
@@ -83,7 +83,7 @@ def bed_spawn(bed_name):
     print("got to clicking the bed.")
   
     
-    '''
+    
     pyautogui.moveTo(2200,1300) # This clicks on the spawn button
     time.sleep(0.2)
     pyautogui.click()
@@ -103,7 +103,7 @@ def bed_spawn(bed_name):
     if (FirstRun == True): # if this is the first run of the script it will trigger the ini() procedure 
         FirstRun = False
         ini()
-     '''   
+        
     
 def bed_screen():
     roi = screen.get_screen()  # gets the screenshot 
@@ -188,8 +188,30 @@ def check_crop():
     see_crops = False
     return None
     
+def check_cooker():
+    roi = screen.get_screen()
 
+    lower_blue = np.array([0,30,100]) # HSV colour to mask to 
+    upper_blue = np.array([255,255,255])
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV) # changing the screenshot into HSV 
+    mask = cv2.inRange(hsv, lower_blue, upper_blue) # getting rid of anything that isnt between the 2 values 
+    masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
+    gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
+
+    crop_icon = cv2.imread("icons/cooker.png", 1) # reads the image of the bed in colour
+    hsv = cv2.cvtColor(crop_icon, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    masked_template = cv2.bitwise_and(crop_icon, crop_icon, mask=mask)
+    crop_icon = cv2.cvtColor(masked_template,cv2.COLOR_BGR2GRAY)
+
+    res = cv2.matchTemplate(gray_roi, crop_icon, cv2.TM_SQDIFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
     
+    if min_val < 0.1:
+        return True
+    else:
+        return False
 
 
 def harvest(crop):
@@ -255,8 +277,23 @@ def harvest_270(): #harvest the full 3 stacks of crops
 
 def fridge_colection():
 
-    bed_spawn(bed_name="fridge")
+    #bed_spawn(bed_name="fridge")
+    turn_right_90()
+    turn_right_90()
+    time.sleep(0.5)
+    pyautogui.press("f")
+    time.sleep(0.5)
+    count = 0
+    while(check_cooker() == False):
+        time.sleep(0.1)
+        count += 1
+        pyautogui.press("f")
 
+        print("no cooker present")
+        if (count > 100):
+            break
+    print("cooker found")
 
-
+time.sleep(2)
+fridge_colection()
 

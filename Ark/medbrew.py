@@ -7,7 +7,7 @@ import ark
 
 
 bed_number = 12 # how many crop plot stations do you have?
-bed_spawn = 0
+ark.bed_count = 0
 ark.first_run = True
 
 '''
@@ -30,4 +30,4 @@ while True:
         '''
 time.sleep(2)
 ark.bed_location()
-ark.bed_spawn(bed_name="death")
+ark.bed_spawn(bed_name="crop")
