@@ -6,16 +6,17 @@ import screen
 
 
 global bed_number
+global first_run
 
 first_run = True
 
-bed_number = 0
 
+bed_spawn = 0
 look_up_delay = 0.5 
 look_down_delay = 0.3
 delay_90 = 2.97 
 
-crop_type = "rock" 
+crop_type = "tinto" 
 
 
 
@@ -54,50 +55,55 @@ def white_flash(): #This function checks to see if the screen becomes white(when
 
 def bed_spawn(bed_name):
 
-    global first_run
 
-    # The bed names for the farm need to set the Bedname in the bot 
-    bed_name = bed_name + str(bed_number) # cycling threw the farm 
     
+    # The bed names for the farm need to set the Bedname in the bot 
+    bed_name = bed_name + str(bed_spawn) # cycling threw the farm 
+    count = 0
+    bed_screen()
+    while (bed_screen() == False): # This is checking to see if the bed has appeared on the map if not the program will retry getting to the bedscreen 
+        look_down()
+        look_down()
+        pyautogui.press("e")
+        count += 1
+        if (count > 100):
+            return False    
+        
     time.sleep(1)
-    pyautogui.moveTo(100,100) # Moves to the place to enter Bedname
-    pyautogui.write(bed_name, interval = 0.05)
+    pyautogui.moveTo(500,1300) # Moves to the place to enter Bedname
     time.sleep(0.5)
+    pyautogui.click()
+    time.sleep(0.5)
+    pyautogui.write(bed_name, interval = 0.05)
+    time.sleep(1)
     pyautogui.moveTo(bed_location_x,bed_location_y) # Clicks on the bed location of the spawn wanted 
     time.sleep(0.5)
     pyautogui.click()
     time.sleep(0.5)
+    print("got to clicking the bed.")
+  
     
-
-    count = 0
-    bed_screen()
-    while (bed_screen() == False): # This is checking to see if the bed has appeared on the map if not the program will retry getting to the bedscreen 
-        pyautogui.moveTo(bed_location_x,bed_location_y)
-        time.sleep(0.5)
-        pyautogui.click()
-        time.sleep(1.0)
-        count += 1
-        if (count > 100):
-            return False
-    
-    pyautogui.moveTo() # This clicks on the spawn button
+    '''
+    pyautogui.moveTo(2200,1300) # This clicks on the spawn button
     time.sleep(0.2)
     pyautogui.click()
+    
 
     white_flash() # detects if the white flash has happened the white flash will take longer on higher ping servers 
     count = 0
     while(white_flash() == False):
         time.sleep(0.1)
         count += 1
+        print("no white flash")
         if (count > 100):
             break
+    print("white flash")
+    time.sleep(10) # This gives time for the respawn animation 
 
-        time.sleep(10) # This gives time for the respawn animation 
-
-        if (FirstRun == True): # if this is the first run of the script it will trigger the ini() procedure 
-            FirstRun = False
-            ini()
-        return True
+    if (FirstRun == True): # if this is the first run of the script it will trigger the ini() procedure 
+        FirstRun = False
+        ini()
+     '''   
     
 def bed_screen():
     roi = screen.get_screen()  # gets the screenshot 
@@ -121,8 +127,9 @@ def bed_screen():
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
     
     if min_val < 0.1: # if the min value is less than 0.1 then it will trigger 
-        return (min_loc[0] + 14, min_loc[1] + 14)
-    return None
+        return True
+    return False
+
         
 def look_up():
     global look_up_delay
@@ -151,6 +158,7 @@ def transfer_all_from():
     pyautogui.moveTo(1875, 265)
     time.sleep(0.5)
     pyautogui.click()
+    time.sleep(0.5)
 
 def check_crop():
     roi = screen.get_screen()
@@ -175,7 +183,7 @@ def check_crop():
     if min_val < 0.1: # if the min value is less than 0.1 then the part shall trigger 
         global see_crops
         see_crops = True
-        return (min_loc[0] + 14, min_loc[1] + 14)
+        return True
     
     see_crops = False
     return None
@@ -203,7 +211,7 @@ def harvest(crop):
     else: #  Crop plots are not on screen will output the date and time of the failure to be logged 
         t = time.localtime() 
         current_time = time.strftime("%H:%M:%S", t)
-        print(f"crop{bed_number} failed at {current_time} ")
+        print(f"crop{bed_spawn} failed at {current_time} ")
 
 
 
@@ -245,7 +253,10 @@ def harvest_270(): #harvest the full 3 stacks of crops
     harvest_stack()
 
 
+def fridge_colection():
 
-time.sleep(2)
+    bed_spawn(bed_name="fridge")
+
+
 
 

@@ -5,7 +5,7 @@ img  = cv.imread('icons/test1.png', 0)
 template = cv.imread('icons/yesmedbrew.png', 0)
 h, w = template.shape
 
-methods = cv.TM_SQDIFF_NORMED , cv.TM_CCOEFF_NORMED
+methods = cv.TM_SQDIFF_NORMED 
 
 for method in methods:
     img2 = img.copy()
