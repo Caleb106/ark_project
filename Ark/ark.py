@@ -11,10 +11,10 @@ global first_run
 first_run = True
 
 
-bed_count = 0
-look_up_delay = 0.5 
-look_down_delay = 0.3
-delay_90 = 2.97 
+bed_count = 0 # do not change 
+look_up_delay = 0.5 # might be a better value to pick 
+look_down_delay = 0.3 # might be a better value to pick 
+delay_90 = 2.92 #2.97 was the previous amount 
 
 crop_type = "tinto" 
 
@@ -27,7 +27,7 @@ def ini():
     f.close()
     pyautogui.press("tab")
     time.sleep(0.3)
-    pyautogui.write(ini, interval=0.02)
+    pyautogui.write(ini, interval=0.02) #writing ini to the console 
     pyautogui.press("enter")
     time.sleep(0.3)
     pyautogui.press("tab")
@@ -39,7 +39,7 @@ def bed_location():
     global bed_location_x
     global bed_location_y
     f = open("bedlocation.txt","r") # Location for your beds first row is X second row is Y 
-    x = f.readline()
+    x = f.readline() 
     y = f.readline()
     f.close()
     bed_location_x = int(x) # The pixel cordinant of your beds that are used for your farm 
@@ -53,7 +53,7 @@ def white_flash(): #This function checks to see if the screen becomes white(when
     return res1 # returns True if there is a white screen 
 
 
-def bed_spawn(bed_name):
+def bed_spawn(bed_name, bed_count):
 
 
     
@@ -70,20 +70,17 @@ def bed_spawn(bed_name):
             return False    
         
     time.sleep(1)
-    pyautogui.moveTo(500,1300) # Moves to the place to enter Bedname
+    pyautogui.moveTo(500,1300) # The bed search bar 
     time.sleep(0.5)
     pyautogui.click()
     time.sleep(0.5)
-    pyautogui.write(bed_name, interval = 0.05)
+    pyautogui.write(bed_name, interval = 0.05) # writes in the bedname we are spawning in 
     time.sleep(1)
     pyautogui.moveTo(bed_location_x,bed_location_y) # Clicks on the bed location of the spawn wanted 
     time.sleep(0.5)
     pyautogui.click()
     time.sleep(0.5)
-    print("got to clicking the bed.")
-  
-    
-    
+
     pyautogui.moveTo(2200,1300) # This clicks on the spawn button
     time.sleep(0.2)
     pyautogui.click()
@@ -131,36 +128,41 @@ def bed_screen():
     return False
 
         
-def look_up():
-    global look_up_delay
+def look_up(): # will make the ark charecter look up 
+    global look_up_delay 
     pyautogui.keyDown("up")
     time.sleep(look_up_delay)
     pyautogui.keyUp("up")
 
-def look_down():
+def look_down(): # makes the ark charecter look down 
     global look_down_delay
     pyautogui.keyDown("down")
     time.sleep(look_down_delay)
     pyautogui.keyUp("down")
 
-def turn_right_90():
+def turn_right_90(): # turns charecter right by 90* 
     global delay_90
     pyautogui.keyDown("right")
     time.sleep(delay_90)
     pyautogui.keyUp("right")
 
-def turn_left_90():
+def turn_left_90(): # turns charecter left by 90* 
     pyautogui.keyDown("left")
     time.sleep(delay_90)
     pyautogui.keyUp("left")
 
-def transfer_all_from():
+def transfer_all_from(): # transfering all from the tame or strucutre
     pyautogui.moveTo(1875, 265)
     time.sleep(0.5)
     pyautogui.click()
     time.sleep(0.5)
 
-def check_crop():
+def transfer_all_inventory(): # transfering all from the player inventory 
+    pyautogui.moveTo(520,265)
+    time.sleep(0.5)
+    pyautogui.click()
+
+def check_crop(): # checks if crop plot is open
     roi = screen.get_screen()
 
     lower_blue = np.array([0,30,100]) # HSV colour to mask to 
@@ -171,7 +173,7 @@ def check_crop():
     masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
     gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
 
-    crop_icon = cv2.imread("icons/crop_plot.png", 1) # reads the image of the bed in colour
+    crop_icon = cv2.imread("icons/crop_plot.png", 1) # reads the image of the cropplot in colour
     hsv = cv2.cvtColor(crop_icon, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     masked_template = cv2.bitwise_and(crop_icon, crop_icon, mask=mask)
@@ -188,7 +190,7 @@ def check_crop():
     see_crops = False
     return None
     
-def check_cooker():
+def check_cooker(): # checks if a cooker is open
     roi = screen.get_screen()
 
     lower_blue = np.array([0,30,100]) # HSV colour to mask to 
@@ -199,7 +201,32 @@ def check_cooker():
     masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
     gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
 
-    crop_icon = cv2.imread("icons/cooker.png", 1) # reads the image of the bed in colour
+    crop_icon = cv2.imread("icons/cooker.png", 1) # reads the image of the cooker in colour
+    hsv = cv2.cvtColor(crop_icon, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    masked_template = cv2.bitwise_and(crop_icon, crop_icon, mask=mask)
+    crop_icon = cv2.cvtColor(masked_template,cv2.COLOR_BGR2GRAY)
+
+    res = cv2.matchTemplate(gray_roi, crop_icon, cv2.TM_SQDIFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    
+    if min_val < 0.1: 
+        return True
+    else:
+        return False
+    
+def check_fridge(): # checking if a fridge is open 
+    roi = screen.get_screen()
+
+    lower_blue = np.array([0,30,100]) # HSV colour to mask to 
+    upper_blue = np.array([255,255,255])
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV) # changing the screenshot into HSV 
+    mask = cv2.inRange(hsv, lower_blue, upper_blue) # getting rid of anything that isnt between the 2 values 
+    masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
+    gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
+
+    crop_icon = cv2.imread("icons/fridge.png", 1) # reads the image of the fridge in colour
     hsv = cv2.cvtColor(crop_icon, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     masked_template = cv2.bitwise_and(crop_icon, crop_icon, mask=mask)
@@ -212,6 +239,69 @@ def check_cooker():
         return True
     else:
         return False
+        
+    
+def check_dedi(): #checking for a dedi is open 
+    roi = screen.get_screen()
+
+    lower_blue = np.array([0,30,100]) # HSV colour to mask to 
+    upper_blue = np.array([255,255,255])
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV) # changing the screenshot into HSV 
+    mask = cv2.inRange(hsv, lower_blue, upper_blue) # getting rid of anything that isnt between the 2 values 
+    masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
+    gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
+
+    dedi_icon = cv2.imread("icons/dedi.png", 1) # reads the image of the dedi in colour
+    hsv = cv2.cvtColor(dedi_icon, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    masked_template = cv2.bitwise_and(dedi_icon, dedi_icon, mask=mask)
+    dedi_icon = cv2.cvtColor(masked_template,cv2.COLOR_BGR2GRAY)
+
+    res = cv2.matchTemplate(gray_roi, dedi_icon, cv2.TM_SQDIFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    if min_val < 0.1:
+        return True
+        
+    else:  
+        return False
+
+
+def dedi_withdraw(amount):  # hits the withdraw stack button on the dedi 
+    time.sleep(0.5)
+    pyautogui.moveTo(1290,1111)
+    for x in range(amount):
+        pyautogui.click()
+        time.sleep(0.5)
+    
+
+
+
+
+def search_in_object(item): # searches for item in the object your accessing(tame or structure)
+    time.sleep(0.2)
+    pyautogui.moveTo(1700,275)
+    time.sleep(0.2)
+    pyautogui.click()
+    pyautogui.write(item)
+    time.sleep(0.2)
+
+def search_in_inventory(item): # searches the the inventory for the item specified
+    time.sleep(0.2)
+    pyautogui.moveTo(350,275)
+    time.sleep(0.2)
+    pyautogui.click()
+    time.sleep(0.2)
+    pyautogui.write(item)
+    time.sleep(0.2)
+
+def drop_all(): # drops all items on teh floor 
+    time.sleep(0.2)
+    pyautogui.moveTo(580,275)
+    time.sleep(0.2)
+    pyautogui.click()
+    time.sleep(0.2)
 
 
 def harvest(crop):
@@ -227,13 +317,13 @@ def harvest(crop):
         time.sleep(0.5)
         transfer_all_from()
         time.sleep(0.5)
-        pyautogui.press("esc")
+        pyautogui.press("esc") # exiting the crop plots 
         time.sleep(1)
         
     else: #  Crop plots are not on screen will output the date and time of the failure to be logged 
         t = time.localtime() 
         current_time = time.strftime("%H:%M:%S", t)
-        print(f"crop{bed_spawn} failed at {current_time} ")
+        print(f"crop{bed_count} failed at {current_time} ")
 
 
 
@@ -241,26 +331,26 @@ def harvest_stack(): # harvest the stack of crops verticaly
     time.sleep(0.2)
     look_up()
     look_up()
-    for  x in range(4): 
+    for  x in range(4): # opening up 4 crop plots before moving on 
         look_up()
         time.sleep(1)
-        harvest(crop=crop_type)
+        harvest(crop=crop_type) #harvesting the crop type set at the top
 
     pyautogui.sleep(1)
-    pyautogui.press("ctrl")
+    pyautogui.press("ctrl") # uncrounching
     time.sleep(0.5)
-    look_down()
+    look_down() # looking down one to fix the unalienment 
     time.sleep(0.3)
     harvest(crop=crop_type)
 
-    for x in range(2):
+    for x in range(2): # harvesting the next 2 stacks ## might be able to change it to 3 in further testing 
         look_up()
         time.sleep(1)
         harvest(crop=crop_type)
         time.sleep(1)
 
     for x in range(11):
-        look_down()
+        look_down() # looks at the floor of the beds 
 
 
 def harvest_270(): #harvest the full 3 stacks of crops 
@@ -277,23 +367,162 @@ def harvest_270(): #harvest the full 3 stacks of crops
 
 def fridge_colection():
 
-    #bed_spawn(bed_name="fridge")
-    turn_right_90()
+    
+    turn_right_90() # spawns looking at the fridge( maybe will change so it spawns looking at the cooker)
     turn_right_90()
     time.sleep(0.5)
-    pyautogui.press("f")
-    time.sleep(0.5)
+    pyautogui.press("f") # opens the cooker 
+    time.sleep(1)
     count = 0
-    while(check_cooker() == False):
+    
+    while(check_cooker() == False): # if the cooker is not on the screen it will wait (due to server lag)
         time.sleep(0.1)
         count += 1
-        pyautogui.press("f")
-
+        
         print("no cooker present")
         if (count > 100):
             break
     print("cooker found")
 
-time.sleep(2)
-fridge_colection()
+    search_in_object(item="medbrew") # searching in the cooker for medbrews
+    transfer_all_from() # transfers all medbrews from cooker into inventory 
+    time.sleep(0.5)
 
+    search_in_object(item="narco") # transfering all narcos from the cooker into the inventory 
+    transfer_all_from()
+    time.sleep(0.5)
+
+    pyautogui.press("esc") # exiting the cooker
+    time.sleep(1)
+    look_down()
+    look_down()
+
+    pyautogui.press("f") # trying to access the dedi 
+    time.sleep(1)
+
+    count = 0
+    while(check_dedi() == False): # waiting for the dedi to appear on screen due to lag
+        time.sleep(0.2)
+        count += 1
+        
+        if (count > 100):
+            break
+
+    time.sleep(1)
+    transfer_all_inventory() # transfering all narcos into the dedi 
+    time.sleep(0.2)
+    dedi_withdraw(amount=7) # withdrawing 7 stacks (700 narcos )
+    time.sleep(0.2)
+    pyautogui.press("f")
+    time.sleep(1)
+
+    look_up() 
+    pyautogui.press("f") # accessing the cooker  
+    time.sleep(1)
+    count = 0
+    while(check_cooker() == False):
+        time.sleep(0.1)
+        count += 1
+
+        print("no cooker present")
+        if (count > 100):
+            break
+    time.sleep(1)
+    search_in_inventory(item="narco") # searching for only narcos as we will only put narcos in for the next run 
+    time.sleep(1)
+    transfer_all_inventory() # transfering all narcos into the cooker 
+    time.sleep(1)
+
+    pyautogui.press("esc") # leaving the cooker 
+    time.sleep(1)
+    turn_right_90() # turning to face the fridge 
+    turn_right_90()
+
+
+    pyautogui.press("f") # opening fridge 
+    time.sleep(1)
+    count = 0
+    while(check_fridge() == False): # checking to see if the fridge is open (due to lag )
+        time.sleep(0.2)
+        count += 1
+    
+        if (count > 100):
+            break
+
+    search_in_inventory(item="medbrew") # adding the medbrews to the fridge 
+    time.sleep(0.5)
+    transfer_all_inventory()
+    time.sleep(0.5)
+    pyautogui.press("esc") # leaving the fridge 
+    time.sleep(1)
+
+    for x in range(6):
+        look_down() # looking down towards the bed 
+
+
+
+def check_medbrews_craftable(): #checking for if medbrews are craftable
+    roi = screen.get_screen()
+
+    lower_blue = np.array([0,30,100]) # HSV colour to mask to 
+    upper_blue = np.array([255,255,255])
+
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV) # changing the screenshot into HSV 
+    mask = cv2.inRange(hsv, lower_blue, upper_blue) # getting rid of anything that isnt between the 2 values 
+    masked_template = cv2.bitwise_and(roi, roi, mask= mask) 
+    gray_roi = cv2.cvtColor(masked_template, cv2.COLOR_BGR2GRAY)
+
+    nomedbrews_icon = cv2.imread("icons/nomedbrew.png", 1) # reads the image of the medbrews not being able to be crafted anymore colour
+    hsv = cv2.cvtColor(nomedbrews_icon, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    masked_template = cv2.bitwise_and(nomedbrews_icon, nomedbrews_icon, mask=mask)
+    nomedbrews_icon = cv2.cvtColor(masked_template,cv2.COLOR_BGR2GRAY)
+
+    res = cv2.matchTemplate(gray_roi, nomedbrews_icon, cv2.TM_SQDIFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    if min_val < 0.1:
+        return True
+        
+    else: 
+        return False
+    
+
+def craft_medbrews(): # crafting medbrews 
+
+    for x in range(4):
+        look_up() # looking up from the crop bed 
+
+    turn_right_90() # turning right to face the cooker 
+    time.sleep(0.5)
+    pyautogui.press("f") # openening the cooker 
+    time.sleep(1)
+
+    while(check_cooker() == False): # checking to see if the cooker has been opened
+        time.sleep(1)
+        count += 1
+        if (check_cooker() == False):
+            time.sleep(0.5)
+            pyautogui.press("esc")
+
+        if (count > 100):
+            break
+    search_in_inventory(item="seed")
+    time.sleep(0.5)
+    drop_all() # dropping all the seeds collected from the cookers 
+    time.sleep(0.5)
+    transfer_all_inventory() # transfering all the tintos in the inventory into the cooker 
+
+    time.sleep(1)
+    search_in_object(item="medical") # searching for the medical brews 
+    time.sleep(1)
+    while(check_medbrews_craftable() == False): # while medical brews are able to be crafted 
+        pyautogui.moveTo(1660,370)
+        pyautogui.click()
+        pyautogui.press("a") #crafting all(10)- as they have capped it 
+        time.sleep(10)
+    print("all medbrews crafted") # when medical brews are unable to be crafted (ran out of tintos )
+    pyautogui.press("esc")
+    
+    for x in range(11): # look down at the bed 
+        look_down()
