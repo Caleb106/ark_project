@@ -568,7 +568,6 @@ def craft_medbrews(): # crafting medbrews
     for x in range(6):
         look_up() # looking up from the crop bed 
     time.sleep(1)
-    pyautogui.press("ctrl")
     turn_right_90() # turning right to face the cooker 
     time.sleep(0.5)
     walk_forward()
@@ -609,3 +608,4 @@ def craft_medbrews(): # crafting medbrews
     
     for x in range(14): # look down at the bed 
         look_down()
+
