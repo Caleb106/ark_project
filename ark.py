@@ -575,7 +575,7 @@ def craft_medbrews(): # crafting medbrews
     pyautogui.press("f") # openening the cooker 
     time.sleep(2)
     
-
+    count = 0
     while(check_cooker() == False): # checking to see if the cooker has been opened
         time.sleep(1)
         count += 1
