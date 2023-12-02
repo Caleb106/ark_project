@@ -47,7 +47,9 @@ while True:
         if ark.bed_count == bed_number: # if the bed count is = to the number of beds, bed count will reset to 0 
             ark.bed_count = 0
             fridge_count = 0
- 
+            ark.bed_spawn(bed_name="death", bed_count= 0) # death bed to reset HP food and water 
+            time.sleep(15)
+
         else:
             ark.bed_count += 1 # if higher than bed count we will reset the bed count.
 
